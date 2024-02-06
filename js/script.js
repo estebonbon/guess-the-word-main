@@ -1,40 +1,55 @@
 /* Global Variables */
 
+
 const guessedAlpha = document.querySelector(".guessed-letters"); // The unordered list where the player’s guessed letters will appear.
 const guessButton = document.querySelector(".guess") // The button with the text “Guess!” in it.
 const currentGuess = document.querySelector(".letter") // The text input where the player will guess a letter.
 const mysteryWord = document.querySelector(".word-in-progress") // The empty paragraph where the word in progress will appear.
-const guessesLeft = document.querySelector(".remaining") // The span inside the paragraph where the remaining guesses will display.
+const guessesLeftElement = document.querySelector(".remaining") // The span inside the paragraph where the remaining guesses will display.
 const messages = document.querySelector(".message") // The empty paragraph where messages will appear when the player guesses a letter.
 const playAgainButton = document.querySelector(".play-again") // The hidden button that will appear prompting the player to play again.
 
-/* temporary value for the word */ const word = "magnolia";
+let word = "magnolia"; // temporary value for the word 
+
 
 const guessedLetters = [];
+let guessesLeft = 8; // word.length; to make it change based on the length of the word
 
-/*const circleLetters = function (word) {
-    for(const letter of word) {
-        console.log(letter);
-        let p = document.createElement("p");
-        p.innerText ="●";
-        mysteryWord.append(p);
-    }
-} */
+const getWord = async function () {
 
+    const res = await fetch("https://gist.githubusercontent.com/skillcrush-curriculum/7061f1d4d3d5bfe47efbfbcfe42bf57e/raw/5ffc447694486e7dea686f34a6c085ae371b43fe/words.txt");
+    const words = await res.text();
+
+    const wordsArray = words.split("\n"); // When the `.split()` method is used with "\n", it scans the string and splits it into separate elements at every occurrence of the "\n" marker.
+
+    const randomNumber = Math.floor((Math.random()* wordsArray.length)); // In this equation I am looking for a random number inbetween zero and the amount of words availble in wordsArray.
+
+    word = wordsArray[randomNumber].trim(); // By using the [] brackets I am telling the program to choose the word at the index position of #randomNumber. The .trim() is used to clear out any whitespace beside the word.
+    // ERROR, previously my code was const words instead of "words =" when I changed that the program ran smoothly.
+    console.log(word);
+
+    circleLetters(word);
+
+
+    //console.log(wordsArray); 
+};
+
+// This starts the game
+getWord();
 
 //////////////////////////  Display our symbols as placeholders for the chosen word's letters \\\\\\\\\\\\\\\\\\\
 const circleLetters = function (word) {  
     const mysteryCircles = []; // this is the array where the individual circles each representing a letter in the mystery word, will be pushed to.
 
     for(const letter of word) {
-        console.log(letter);
+        //console.log(letter);
         mysteryCircles.push("●")
     }
     mysteryWord.innerText = mysteryCircles.join("");
     console.log(mysteryWord.innerText);
 };
 
-circleLetters(word); 
+
 
 ///////////////////////// Activate the Guess Button to retrieve Letter, and test for eligibility \\\\\\\\\\\\\\\
 guessButton.addEventListener("click", function (event) {
@@ -43,7 +58,7 @@ guessButton.addEventListener("click", function (event) {
     messages.innerText = "";
 
     const guessedLetter = currentGuess.value // this takes the value of the letter inputed into the input section
-    console.log(guessedLetter);
+    //console.log(guessedLetter);
 
     currentGuess.value = ""; // by doing this we are resetting the value.
 
@@ -89,12 +104,13 @@ const makeGuess = function (letter) { // This is the second outside function of 
     guess = letter.toUpperCase() // Converts all the alphabetic characters in a string to uppercase
 
     if (guessedLetters.includes(guess)) {
-        messages.innerText = "That letter has already been guessed, try again";
+        messages.innerText = "That letter has already been guessed, try again."; // checks to see whether this guess has alread been made
     } else {
         guessedLetters.push(guess);
         console.log(guessedLetters);
         updateGuessedLetters();
-        updateWord(guessedLetters); // guessedLetters must be passed as an argument so Update word can refer to its value in the function. Kee
+        updateGuessesLeft(guess); // The important thing to remember is guess has been vetted to be a real letter, while it is proccesed in the "validInput" function. Guessed letters does not represent the guess made. It represent the array of guesses made.
+        updateWord(guessedLetters); // guessedLetters must be passed as an argument so Update word can refer to its value in the function. 
     }
 };
 
@@ -132,10 +148,45 @@ const updateWord = function (guessedLetters) {
     console.log(wordArray)
 };
 
+/* Part 3 */
+
+const updateGuessesLeft = function (guess) {
+    const wordCap = word.toUpperCase(); // This is similar to the variable in the other function called wordUpper
+
+    if(!wordCap.includes(guess)) { // Send a message to the user telling them if there guess was correct or not.
+        messages.innerText = `Sorry, the word does not contain the letter ${guess.toUpperCase()}, try again.`;
+        guessesLeft -= 1; // Subtracts an incorrect guess from the total remaining guesses. This could have been placed in an earlier function in the code, but in this case were only subtracting from the guesses that were actuall letters.
+    } else {
+        messages.innerText = `Good guess the word has the letter ${guess.toUpperCase()}.`
+    }
+
+    if(guessesLeft === 0) {
+        messages.innerHTML = `GAME OVER! The word is <span class="highlight">${word.toUpperCase()}</span>.`; // The message displayed to the user if the game defeats them.
+        guessesLeftElement.innerText = `You have 0 guesses remaining`;
+    } else if (guessesLeft === 1) {
+        guessesLeftElement.innerText = `You have 1 guess remaining.`; // This else if statement was neccesary for grammar purposes. "You have 1 guesses remaining" is improper grammar.
+    } else {
+        guessesLeftElement.innerText = `You have ${guessesLeft} guesses remaing.`; // The template literal is used in this occasion, to give it's value to the string.
+    }
+};
+
+/* Part 2 */
+
 const checkForWin = function () {
     if (word.toUpperCase() === mysteryWord.innerText) { // keep including the .toUpperCase inorder to avoid silly errors. Also the mysteryWord.innerText was just updated an excuted in the function above. That is why it is being used for reference here.
         mysteryWord.classList.add("win"); // ERROR I forgot to put the brackets beside .toUpperCase
         mysteryWord.innerHTML = `<p class="highlight">You guessed correct the word! Congrats!</p>` // ERROR fix, I forgot to include the [``]. This statement is adding a congratulations message, to the empty paragraph. And is seperate for the mysteryWord inner text. 
     }
-};
+}; 
 
+
+
+/* 
+const circleLetters = function (word) { // this code works but does not preform the correct task.
+    for(const letter of word) {
+        console.log(letter);
+        let p = document.createElement("p");
+        p.innerText ="●";
+        mysteryWord.append(p);
+    }
+}; */ 
