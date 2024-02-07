@@ -12,8 +12,8 @@ const playAgainButton = document.querySelector(".play-again") // The hidden butt
 let word = "magnolia"; // temporary value for the word 
 
 
-const guessedLetters = [];
-let guessesLeft = 8; // word.length; to make it change based on the length of the word
+let guessedLetters = [];
+let guessesLeft = 8; 
 
 const getWord = async function () {
 
@@ -26,11 +26,13 @@ const getWord = async function () {
 
     word = wordsArray[randomNumber].trim(); // By using the [] brackets I am telling the program to choose the word at the index position of #randomNumber. The .trim() is used to clear out any whitespace beside the word.
     // ERROR, previously my code was const words instead of "words =" when I changed that the program ran smoothly.
+
+    //guessesLeft = word.length; // here I am giving guesses left a new value based on the length of the new random
     console.log(word);
 
     circleLetters(word);
 
-
+    
     //console.log(wordsArray); 
 };
 
@@ -163,10 +165,11 @@ const updateGuessesLeft = function (guess) {
     if(guessesLeft === 0) {
         messages.innerHTML = `GAME OVER! The word is <span class="highlight">${word.toUpperCase()}</span>.`; // The message displayed to the user if the game defeats them.
         guessesLeftElement.innerText = `You have 0 guesses remaining`;
+        startOver();
     } else if (guessesLeft === 1) {
         guessesLeftElement.innerText = `You have 1 guess remaining.`; // This else if statement was neccesary for grammar purposes. "You have 1 guesses remaining" is improper grammar.
     } else {
-        guessesLeftElement.innerText = `You have ${guessesLeft} guesses remaing.`; // The template literal is used in this occasion, to give it's value to the string.
+        guessesLeftElement.innerText = `You have ${guessesLeft} guesses remaining.`; // The template literal is used in this occasion, to give it's value to the string.
     }
 };
 
@@ -174,12 +177,39 @@ const updateGuessesLeft = function (guess) {
 
 const checkForWin = function () {
     if (word.toUpperCase() === mysteryWord.innerText) { // keep including the .toUpperCase inorder to avoid silly errors. Also the mysteryWord.innerText was just updated an excuted in the function above. That is why it is being used for reference here.
-        mysteryWord.classList.add("win"); // ERROR I forgot to put the brackets beside .toUpperCase
-        mysteryWord.innerHTML = `<p class="highlight">You guessed correct the word! Congrats!</p>` // ERROR fix, I forgot to include the [``]. This statement is adding a congratulations message, to the empty paragraph. And is seperate for the mysteryWord inner text. 
+        messages.classList.add("win"); // ERROR I forgot to put the brackets beside .toUpperCase
+        messages.innerHTML = `<p class="highlight">You guessed correct the word! Congrats!</p>` // ERROR fix, I forgot to include the [``]. This statement is adding a congratulations message, to the empty paragraph. And is seperate for the mysteryWord inner text. 
+        startOver();
     }
 }; 
 
+/* Part 4 */
 
+const startOver = function () {
+    guessButton.classList.add("hide");
+    guessesLeftElement.classList.add("hide");
+    guessedAlpha.classList.add("hide");
+
+    playAgainButton.classList.remove("hide");
+};
+
+playAgainButton.addEventListener("click", function() {
+    messages.classList.remove("win");
+    messages.innerText = "";
+    guessedAlpha.innerText = "";
+
+    guessesLeft = 8;
+    guessedLetters = [];
+    guessesLeftElement.innerText = `You have ${guessesLeft} guesses remaining.`;
+
+    guessButton.classList.remove("hide");
+    guessesLeftElement.classList.remove("hide");
+    guessedAlpha.classList.remove("hide");
+
+    playAgainButton.classList.add("hide");
+
+    getWord();
+})
 
 /* 
 const circleLetters = function (word) { // this code works but does not preform the correct task.
@@ -190,3 +220,4 @@ const circleLetters = function (word) { // this code works but does not preform 
         mysteryWord.append(p);
     }
 }; */ 
+
